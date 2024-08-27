@@ -1,0 +1,61 @@
+#!/bin/bash
+# The location where discord is installed
+FILE="$HOME/Applications/Discord"
+
+
+
+
+echo "Getting version number"
+current=$(grep -oP '(?<="version": ")[^"]*' "$FILE/resources/build_info.json")
+echo "Current version: $current"
+current=$(echo "$current" | tr -d '.')
+current=$((10#$current + 1))
+current=$(printf "%04d" "$current")
+new_version="${current:0:1}.${current:1:1}.${current:2:2}"
+echo "Download version $new_version? [y/n]"
+read -r answer
+if [[ "${answer:0:1}" != 'y' ]]; then
+	echo "Canceling update"
+	exit
+fi
+echo "Downloading"
+URL="https://dl.discordapp.net/apps/linux/$new_version/discord-$new_version.tar.gz"
+echo "URL: $URL"
+cd ~/Downloads/
+wget $URL
+if [[ ! -e "discord-$new_version.tar.gz" ]]; then
+	echo "Download failed"
+	exit
+fi
+echo "Unziping Discord"
+if [[ -n "$(gzip -d discord-$new_version.tar.gz)" ]]; then
+	echo "Unziping failed"
+	exit
+else
+	echo "Successfully Unziped"
+fi
+echo "Extracting Archive"
+if [[ -n "$(tar -xf discord-$new_version.tar)" ]]; then
+	echo "Extracting failed"
+	exit
+elif [[ -n "$(ls | grep Discord)" ]]; then
+	echo "Successfully Extracted"
+	echo "Removing archive"
+	rm discord-$new_version.tar
+else
+	echo "Extracting didn't produce a folder named \"Discord\""
+	exit
+fi
+cd "$FILE/.."
+echo "Removing previous Discord Backup"
+rm -rf Discord_Backup
+echo "Creating new Discord Backup"
+mv Discord Discord_Backup
+echo "Moving Discord to install location"
+mv ~/Downloads/Discord/ .
+if [[ "$(ls | grep -w Discord)" == "Discord" ]]; then
+	current=$(grep -oP '(?<="version": ")[^"]*' "$FILE/resources/build_info.json")
+	echo "Version $current installed"
+else
+	echo "No \"Discord\" folder found"
+fi
