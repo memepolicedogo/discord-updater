@@ -3,18 +3,16 @@
 FILE="$HOME/Applications/Discord"
 
 
-
-
 echo "Getting version number"
 current=$(grep -oP '(?<="version": ")[^"]*' "$FILE/resources/build_info.json")
 echo "Current version: $current"
 current=$(echo "$current" | tr -d '.')
 current=$((10#$current + 1))
-current=$(printf "%04d" "$current")
-new_version="${current:0:1}.${current:1:1}.${current:2:2}"
-echo "Download version $new_version? [y/n]"
+current=$(printf "%03d" "$current")
+new_version="0.0.${current}"
+echo "Download version $new_version? [Y/n]"
 read -r answer
-if [[ "${answer:0:1}" != 'y' ]]; then
+if [[ "${answer:0:1}" == 'n' ]]; then
 	echo "Canceling update"
 	exit
 fi
